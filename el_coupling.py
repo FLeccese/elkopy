@@ -80,4 +80,5 @@ class ElectronicCoupling:
 		return p_term * 27.2114 # eV
 	
 
-		
+	def new_method():
+		pass	
