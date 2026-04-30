@@ -55,6 +55,7 @@ def main():
     start, stop, step = args.range
     for dist in np.arange(start, stop + (step/10), step): # +(step/10) is just to allow the calculation at distance=stop
         
+        
         # Creation translation vector
         trans_vector = np.array(args.offset)
         if args.axis == 'x':
