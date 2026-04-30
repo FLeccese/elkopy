@@ -2,6 +2,7 @@ import numpy as np
 from pyscf import scf, gto
 from pyscf.scf.jk import get_jk
 
+
 class ElectronicCoupling:
 	def __init__(self, m1, m2, rho_D, rho_A):
 		self.m1 = m1
