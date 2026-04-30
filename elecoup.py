@@ -6,6 +6,7 @@ from monomer import Monomer
 from el_coupling import ElectronicCoupling
 import utils
 
+
 def main():
      # 1.Argparse configuration for input
     parser = argparse.ArgumentParser(description="Electronic Coupling calculation.")
