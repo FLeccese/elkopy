@@ -6,26 +6,26 @@ from monomer import Monomer
 from el_coupling import ElectronicCoupling
 import utils
 
+ # 1.Argparse configuration for input
+parser = argparse.ArgumentParser(description="Electronic Coupling calculation.")
+    
+# mandatory argument
+parser.add_argument("xyz_file", help="File .xyz with monomer geometry ")
+    
+# optional arguments
+parser.add_argument("-s", "--state", type=int, default=0, help="Excited state index (default: 0)")
+parser.add_argument("--spin", choices=['singlet', 'triplet'], default='singlet', help="Spin multiplicity (default: singlet)")
+parser.add_argument("-b", "--basis", type=str, default='sto-6g', help="Basis set (default: sto-6g)")
+    
+# scan parameter
+parser.add_argument("--axis", choices=['x', 'y', 'z'], default='z', help="Scanning axis (default: z)")
+parser.add_argument("--range", type=float, nargs=3, metavar=('START', 'STOP', 'STEP'), default=[0.0, 10.0, 0.5], help="Start stop and step (default: 0.0 10.0 0.5)")
+parser.add_argument("--offset", type=float, nargs=3, metavar=('X', 'Y', 'Z'), default=[0.0, 0.0, 0.0], help="Initial offset position for acceptor (default: 0.0 0.0 0.0)")
+
+args = parser.parse_args()
 
 def main():
-     # 1.Argparse configuration for input
-    parser = argparse.ArgumentParser(description="Electronic Coupling calculation.")
     
-    # mandatory argument
-    parser.add_argument("xyz_file", help="File .xyz with monomer geometry ")
-    
-    # optional arguments
-    parser.add_argument("-s", "--state", type=int, default=0, help="Excited state index (default: 0)")
-    parser.add_argument("--spin", choices=['singlet', 'triplet'], default='singlet', help="Spin multiplicity (default: singlet)")
-    parser.add_argument("-b", "--basis", type=str, default='sto-6g', help="Basis set (default: sto-6g)")
-    
-    # scan parameter
-    parser.add_argument("--axis", choices=['x', 'y', 'z'], default='z', help="Scanning axis (default: z)")
-    parser.add_argument("--range", type=float, nargs=3, metavar=('START', 'STOP', 'STEP'), default=[0.0, 10.0, 0.5], help="Start stop and step (default: 0.0 10.0 0.5)")
-    parser.add_argument("--offset", type=float, nargs=3, metavar=('X', 'Y', 'Z'), default=[0.0, 0.0, 0.0], help="Initial offset position for acceptor (default: 0.0 0.0 0.0)")
-
-    args = parser.parse_args()
-
     # 2. Initialization
     start_time = time.time()
     mem_start = utils.get_memory_usage()
