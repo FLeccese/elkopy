@@ -25,3 +25,13 @@ def dipole_dipole_J(m1, m2, coords, idx, singlet=True):
 
 def print_row(d, jc, jk, jp, jd, jtot):
     print(f"{d:8.2f} | {jc:10.4e} | {jk:10.4e} | {jp:10.4e} | {jd:10.4e} | {jtot:10.4e}")
+
+def create_translation_vector(offset, dist, axis):
+    trans_vector = np.array(offset)
+    if axis == 'x':
+        trans_vector[0] += dist
+    elif axis == 'y':
+        trans_vector[1] += dist
+    elif axis == 'z':
+        trans_vector[2] += dist
+    return trans_vector
