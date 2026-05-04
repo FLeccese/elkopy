@@ -67,7 +67,7 @@ def main():
 
         m2.set_position(trans_vector)
         
-        # Calcolo coupling
+        # Coupling calculation
         coup = ElectronicCoupling(m1, m2, rho1, rho2)
         jc = coup.get_J(singlet=is_singlet)
         jk = coup.get_K()
@@ -84,7 +84,7 @@ def main():
         
         utils.print_row(dist, jc, jk, jp, jd, j_total)
 
-    # 5. Report finale
+    # 5. Final report
     end_time = time.time()
     mem_final = utils.get_memory_usage()
             
