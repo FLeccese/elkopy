@@ -52,15 +52,16 @@ def main():
     print(f"{'Dist('+args.axis+')':>8} | {'J_Coul':>10} | {'J_Exch':>10} | {'J_Pterm':>11} | {'J_DipDip':>10} | {'J_Total':>10}")
     print("-" * 75)
 
+
     start, stop, step = args.range
     for dist in np.arange(start, stop + (step/10), step): # +(step/10) is just to allow the calculation at distance=stop
         
         trans_vector = utils.create_translation_vector(args.offset, dist, args.axis)
-
-        m2.set_position(trans_vector)
+        m2_new=m2.copy()
+        m2_new.move(trans_vector)
         
         # Coupling calculation
-        coup = ElectronicCoupling(m1, m2, rho1, rho2)
+        coup = ElectronicCoupling(m1, m2_new, rho1, rho2)
         jc = coup.get_J(singlet=is_singlet)
         jk = coup.get_K()
         

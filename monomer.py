@@ -1,5 +1,6 @@
 from pyscf import gto, scf, tdscf
 import numpy as np
+from copy import deepcopy
 
 class Monomer:
 	def __init__(self, xyz_file, basis):
@@ -39,10 +40,12 @@ class Monomer:
 		rho_mono = c_occ @ a_ia @ c_virt.T 
 		return rho_mono
 
-	def set_position(self, vector):
-		#Shift the monomer by a vector dx,dy,dz
-		original_mol = gto.Mole().fromfile(self.xyz_file)        
-		coords = original_mol.atom_coords(unit='Angstrom')
+	def copy(self):
+		return deepcopy(self)
+
+	def move(self, vector):
+		#Shift the monomer by a vector dx,dy,dz    
+		coords = self.mol.atom_coords(unit='Angstrom')
 		labels = [a[0] for a in self.mol._atom]
         
 		new_atoms = []
