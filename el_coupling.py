@@ -78,7 +78,3 @@ class ElectronicCoupling:
 		p_term = (s_apbp * beta_ab) + (s_ab * beta_apbp) - (s_ab * s_apbp * (v_2e + j0))
         
 		return p_term * 27.2114 # eV
-	
-
-	def new_method():
-		pass	
