@@ -10,9 +10,10 @@ import utils
 parser = argparse.ArgumentParser(description="Electronic Coupling calculation.")
     
 # mandatory argument
-parser.add_argument("xyz_file", help="File .xyz with monomer geometry ")
+parser.add_argument("xyz_1", help="File .xyz for the donor (if it is the only xyz file specified, it will be valid also for the acceptor) ")
     
 # optional arguments
+parser.add_argument("xyz_2", nargs='?', help="File .xyz for the acceptor. If omitted, xyz_1 is used")
 parser.add_argument("-s", "--state", type=int, default=0, help="Excited state index (default: 0)")
 parser.add_argument("--spin", choices=['singlet', 'triplet'], default='singlet', help="Spin multiplicity (default: singlet)")
 parser.add_argument("-b", "--basis", type=str, default='sto-6g', help="Basis set (default: sto-6g)")
@@ -30,16 +31,18 @@ def main():
     start_time = time.time()
     mem_start = utils.get_memory_usage()
     
-    mol_coord = utils.read_xyz(args.xyz_file)
+    mol_coord1 = utils.read_xyz(args.xyz_1)
+    mol_coord2 = utils.read_xyz(args.xyz_2) if args.xyz_2 else mol_coord1
     is_singlet = (args.spin == 'singlet')
 
     print(f"--- Electronic Coupling Scan ---")
-    print(f"File: {args.xyz_file} | Basis: {args.basis} | State: {args.state} ({args.spin})")
+    print(f"File donor: {args.xyz_1} | File acceptor: {args.xyz_2 if args.xyz_2 else args.xyz_1}")
+    print(f"Basis set: {args.basis} | State: {args.state} ({args.spin})")
     print(f"Scan Axis: {args.axis.upper()} | Range: {args.range[0]} to {args.range[1]} (step {args.range[2]}) | Base Offset: {args.offset}\n")
 
     # 3. Setup and calculations
-    m1 = Monomer(mol_coord, basis=args.basis)
-    m2 = Monomer(mol_coord, basis=args.basis)
+    m1 = Monomer(mol_coord1, basis=args.basis)
+    m2 = Monomer(mol_coord2, basis=args.basis)
     
     print("Start HF/CIS calculations on monomers...\n")
     m1.run_calculations(singlet=is_singlet)
