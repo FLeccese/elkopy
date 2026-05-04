@@ -25,7 +25,7 @@ parser.add_argument("--offset", type=float, nargs=3, metavar=('X', 'Y', 'Z'), de
 args = parser.parse_args()
 
 def main():
-    
+
     # 2. Initialization
     start_time = time.time()
     mem_start = utils.get_memory_usage()
@@ -50,7 +50,7 @@ def main():
 
     print("\nStart scan...\n")
     print(f"{'Dist('+args.axis+')':>8} | {'J_Coul':>10} | {'J_Exch':>10} | {'J_Pterm':>11} | {'J_DipDip':>10} | {'J_Total':>10}")
-    print("-" * 63)
+    print("-" * 75)
 
     start, stop, step = args.range
     for dist in np.arange(start, stop + (step/10), step): # +(step/10) is just to allow the calculation at distance=stop
