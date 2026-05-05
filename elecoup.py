@@ -20,7 +20,7 @@ parser.add_argument("-b", "--basis", type=str, default='sto-6g', help="Basis set
     
 # scan parameter
 parser.add_argument("--axis", choices=['x', 'y', 'z'], default='z', help="Scanning axis (default: z)")
-parser.add_argument("--range", type=float, nargs=3, metavar=('START', 'STOP', 'STEP'), default=[0.0, 10.0, 0.5], help="Start stop and step (default: 0.0 10.0 0.5)")
+parser.add_argument("--range", type=float, nargs=3, metavar=('START', 'STOP', 'STEP'), default=[3.0, 13.0, 0.5], help="Start stop and step (default: 3.0 13.0 0.5)")
 parser.add_argument("--offset", type=float, nargs=3, metavar=('X', 'Y', 'Z'), default=[0.0, 0.0, 0.0], help="Initial offset position for acceptor (default: 0.0 0.0 0.0)")
 
 args = parser.parse_args()
@@ -52,9 +52,8 @@ def main():
     rho2 = m2.get_trans_density(args.state)
 
     print("\nStart scan...\n")
-    print(f"{'Dist('+args.axis+')':>8} | {'J_Coul':>10} | {'J_Exch':>10} | {'J_Pterm':>11} | {'J_DipDip':>10} | {'J_Total':>10}")
-    print("-" * 75)
-
+    print(f"{'Dist('+args.axis+')':>8} | {'J_Coul':>10} | {'J_Exch':>10} | {'J_Pterm':>11} | {'J_DipDip':>11} | {'J_Total':>10}")
+    print("-" * 76)
 
     start, stop, step = args.range
     for dist in np.arange(start, stop + (step/10), step): # +(step/10) is just to allow the calculation at distance=stop
