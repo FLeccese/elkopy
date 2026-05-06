@@ -64,7 +64,7 @@ class ElectronicCoupling:
 		h_core_super = mol_super.intor('int1e_kin') + mol_super.intor('int1e_nuc')
 		
 		vj_core, vk_core = scf.hf.get_jk(mol_super, dm_core_super)
-		h_eff = h_core_super + (2 * vj_core - vk_core)
+		h_eff = h_core_super + (vj_core - 0.5 * vk_core)
 
 		h_aa = c_a_super @ h_eff @ c_a_super
 		h_apap = c_ap_super @ h_eff @ c_ap_super
@@ -89,5 +89,15 @@ class ElectronicCoupling:
 		j0_term = j0 if singlet else -j0
 
 		p_term = (s_apbp * beta_ab) + (s_ab * beta_apbp) - (s_ab * s_apbp * (v_2e + j0_term))
+
+		#print('h_aa=', h_aa*27.2114)
+		#print('h_ab=', h_ab*27.2114)
+		#print('h_apap=', h_apap*27.2114)
+		#print('h_apbp=', h_apbp*27.2114)
+		#print('s_ab=', s_ab)
+		#print('s_apbp=', s_apbp)
+		#print('beta_ab=', beta_ab*27.2114)
+		#print('beta_apbp=', beta_apbp*27.2114)
+		
         
 		return p_term * 27.2114 # eV
