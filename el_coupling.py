@@ -18,13 +18,13 @@ class ElectronicCoupling:
 			return 0.0
 
 		vj = get_jk((self.mol_A, self.mol_A, self.mol_D, self.mol_D), self.rho_D, scripts='ijkl,ji->kl', aosym='s4')
-		j_coul = 2* np.sum(vj * self.rho_A) * 27.2114 #eV
+		j_coul = abs(2* np.sum(vj * self.rho_A)) * 27.2114 #eV
 		
 		return j_coul
 		
 	def get_K(self):
 		vk = get_jk((self.mol_A, self.mol_D, self.mol_D, self.mol_A), self.rho_D, scripts='ijkl,jk->il', aosym='s1')
-		j_exch = np.sum(vk * self.rho_A) * 27.2114 #eV
+		j_exch = -abs(np.sum(vk * self.rho_A)) * 27.2114 #eV
         
 		return j_exch
 
@@ -88,7 +88,7 @@ class ElectronicCoupling:
 		j0 = np.sum(v_j0 * rho_t)
 		j0_term = j0 if singlet else -j0
 
-		p_term = (s_apbp * beta_ab) + (s_ab * beta_apbp) - (s_ab * s_apbp * (v_2e + j0_term))
+		p_term = abs((s_apbp * beta_ab) + (s_ab * beta_apbp) - (s_ab * s_apbp * (v_2e + j0_term)))
 
 		#print('h_aa=', h_aa*27.2114)
 		#print('h_ab=', h_ab*27.2114)

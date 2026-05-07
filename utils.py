@@ -20,7 +20,7 @@ def dipole_dipole_J(m1, m2, coords, idx, singlet=True):
     R_vec = np.array(coords) / 0.529177
     R_mag = np.linalg.norm(R_vec)
     R_u = R_vec / R_mag
-    j_dd = (3 * (np.dot(mu_D, R_u)*np.dot(mu_A, R_u)) - np.dot(mu_D, mu_A)) / (R_mag**3)
+    j_dd = abs((3 * (np.dot(mu_D, R_u)*np.dot(mu_A, R_u)) - np.dot(mu_D, mu_A)) / (R_mag**3))
     return j_dd * 27.2114
 
 def print_row(d, jc, jk, jp, jd, jtot):

@@ -52,8 +52,8 @@ def main():
     rho2 = m2.get_trans_density(args.state)
 
     print("\nStart scan...\n")
-    print(f"{'Dist('+args.axis+')':>8} | {'J_Coul':>10} | {'J_Exch':>10} | {'J_Pterm':>11} | {'J_DipDip':>11} | {'J_Total':>10}")
-    print("-" * 76)
+    print(f"{'Dist('+args.axis+')':>8} | {'J_Coul':>10} | {'J_Exch':>11} | {'J_Pterm':>10} | {'J_DipDip':>10} | {'J_Total':>10}")
+    print("-" * 75)
 
     start, stop, step = args.range
     for dist in np.arange(start, stop + (step/10), step): # +(step/10) is just to allow the calculation at distance=stop
@@ -75,7 +75,7 @@ def main():
             
         jd = utils.dipole_dipole_J(m1, m2, trans_vector, args.state, singlet=is_singlet) 
         
-        j_total = jc - jk - jp
+        j_total = jc + jk + jp
         
         utils.print_row(dist, jc, jk, jp, jd, j_total)
 
