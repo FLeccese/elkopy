@@ -50,6 +50,8 @@ def main():
     
     rho1 = m1.get_trans_density(args.state)
     rho2 = m2.get_trans_density(args.state)
+    if np.dot(m1.td.transition_dipole()[args.state], m2.td.transition_dipole()[args.state]) < 0:
+        rho2 = -rho2
 
     print("\nStart scan...\n")
     print(f"{'Dist('+args.axis+')':>8} | {'J_Coul':>10} | {'J_Exch':>11} | {'J_Pterm':>10} | {'J_DipDip':>10} | {'J_Total':>10}")

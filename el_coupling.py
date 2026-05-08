@@ -2,8 +2,6 @@ import numpy as np
 from pyscf import scf, gto
 from pyscf.scf.jk import get_jk
 
-
-
 class ElectronicCoupling:
 	def __init__(self, m1, m2, rho_D, rho_A):
 		self.m1 = m1
@@ -18,13 +16,13 @@ class ElectronicCoupling:
 			return 0.0
 
 		vj = get_jk((self.mol_A, self.mol_A, self.mol_D, self.mol_D), self.rho_D, scripts='ijkl,ji->kl', aosym='s4')
-		j_coul = abs(2* np.sum(vj * self.rho_A)) * 27.2114 #eV
+		j_coul = 2* np.sum(vj * self.rho_A) * 27.2114 #eV
 		
 		return j_coul
 		
 	def get_K(self):
 		vk = get_jk((self.mol_A, self.mol_D, self.mol_D, self.mol_A), self.rho_D, scripts='ijkl,jk->il', aosym='s1')
-		j_exch = -abs(np.sum(vk * self.rho_A)) * 27.2114 #eV
+		j_exch = -np.sum(vk * self.rho_A) * 27.2114 #eV
         
 		return j_exch
 
@@ -88,7 +86,12 @@ class ElectronicCoupling:
 		j0 = np.sum(v_j0 * rho_t)
 		j0_term = j0 if singlet else -j0
 
-		p_term = abs((s_apbp * beta_ab) + (s_ab * beta_apbp) - (s_ab * s_apbp * (v_2e + j0_term)))
+		rho_test_D = np.outer(c_d_h, c_d_l)
+		phase_D = np.sign(np.sum(rho_test_D * self.rho_D))
+		rho_test_A = np.outer(c_a_h, c_a_l)
+		phase_A = np.sign(np.sum(rho_test_A * self.rho_A))
+
+		p_term = - phase_D * phase_A * (s_apbp * beta_ab) + (s_ab * beta_apbp) - (s_ab * s_apbp * (v_2e + j0_term))
 
 		#print('h_aa=', h_aa*27.2114)
 		#print('h_ab=', h_ab*27.2114)
@@ -100,4 +103,4 @@ class ElectronicCoupling:
 		#print('beta_apbp=', beta_apbp*27.2114)
 		
         
-		return p_term * 27.2114 # eV
+		return p_term *  27.2114 # eV
