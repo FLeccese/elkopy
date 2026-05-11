@@ -91,7 +91,7 @@ class ElectronicCoupling:
 		rho_test_A = np.outer(c_a_h, c_a_l)
 		phase_A = np.sign(np.sum(rho_test_A * self.rho_A))
 
-		p_term = - phase_D * phase_A * (s_apbp * beta_ab) + (s_ab * beta_apbp) - (s_ab * s_apbp * (v_2e + j0_term))
+		p_term = - phase_D * phase_A * ((s_apbp * beta_ab) + (s_ab * beta_apbp) - (s_ab * s_apbp * (v_2e + j0_term)))
 
 		#print('h_aa=', h_aa*27.2114)
 		#print('h_ab=', h_ab*27.2114)
