@@ -25,9 +25,17 @@ class Monomer:
 		self.mol = optimize(mf)
 		return self.mol
 
-	def run_calculations(self, nstates=5, singlet=True):
-		self.mf = scf.RHF(self.mol).run()
-		self.td = tdscf.TDA(self.mf)
+	def run_calculations(self, nstates=5, singlet=True, xc=None):
+		if xc is None:
+			self.mf = scf.RHF(self.mol).run()
+			self.td = tdscf.TDA(self.mf)
+		else:
+			from pyscf import dft
+			self.mf=dft.RKS(self.mol)
+			self.mf.xc = xc
+			self.mf.run()
+			self.td=tdscf.TDA(self.mf)
+		
 		self.td.singlet = singlet
 		self.td.run(nstates=nstates)
 		return self.td

@@ -17,6 +17,7 @@ parser.add_argument("xyz_2", nargs='?', help="File .xyz for the acceptor. If omi
 parser.add_argument("-s", "--state", type=int, default=0, help="Excited state index (default: 0)")
 parser.add_argument("--spin", choices=['singlet', 'triplet'], default='singlet', help="Spin multiplicity (default: singlet)")
 parser.add_argument("-b", "--basis", type=str, default='sto-6g', help="Basis set (default: sto-6g)")
+parser.add_argument("--xc", type=str, default=None, help="DFT functional. If omitted, the program uses HF/CIS methods")
     
 # scan parameter
 parser.add_argument("--axis", choices=['x', 'y', 'z'], default='z', help="Scanning axis (default: z)")
@@ -45,8 +46,8 @@ def main():
     m2 = Monomer(mol_coord2, basis=args.basis)
     
     print("Start HF/CIS calculations on monomers...\n")
-    m1.run_calculations(singlet=is_singlet)
-    m2.run_calculations(singlet=is_singlet)
+    m1.run_calculations(singlet=is_singlet, xc=args.xc)
+    m2.run_calculations(singlet=is_singlet, xc=args.xc)
     
     rho1 = m1.get_trans_density(args.state)
     rho2 = m2.get_trans_density(args.state)
@@ -68,13 +69,7 @@ def main():
         coup = ElectronicCoupling(m1, m2_new, rho1, rho2)
         jc = coup.get_J(singlet=is_singlet)
         jk = coup.get_K()
-        
-        # P term is not finished yet
-        try:
-            jp = coup.get_P_term()
-        except Exception:
-            jp = 0.0
-            
+        jp = coup.get_P_term()
         jd = utils.dipole_dipole_J(m1, m2, trans_vector, args.state, singlet=is_singlet) 
         
         j_total = jc + jk + jp
