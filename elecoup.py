@@ -14,7 +14,7 @@ parser.add_argument("xyz_1", help="File .xyz for the donor (if it is the only xy
     
 # optional arguments
 parser.add_argument("xyz_2", nargs='?', help="File .xyz for the acceptor. If omitted, xyz_1 is used")
-parser.add_argument("-s", "--state", type=int, default=0, help="Excited state index (default: 0)")
+parser.add_argument("-s", "--state", type=int, default=1, help="Excited state index (default: 1)")
 parser.add_argument("--spin", choices=['singlet', 'triplet'], default='singlet', help="Spin multiplicity (default: singlet)")
 parser.add_argument("-b", "--basis", type=str, default='sto-6g', help="Basis set (default: sto-6g)")
 parser.add_argument("--xc", type=str, default=None, help="DFT functional. If omitted, the program uses HF/CIS methods")
@@ -36,22 +36,24 @@ def main():
     mol_coord2 = utils.read_xyz(args.xyz_2) if args.xyz_2 else mol_coord1
     is_singlet = (args.spin == 'singlet')
 
-    print(f"--- Electronic Coupling Scan ---")
-    print(f"File donor: {args.xyz_1} | File acceptor: {args.xyz_2 if args.xyz_2 else args.xyz_1}")
-    print(f"Basis set: {args.basis} | State: {args.state} ({args.spin})")
-    print(f"Scan Axis: {args.axis.upper()} | Range: {args.range[0]} to {args.range[1]} (step {args.range[2]}) | Base Offset: {args.offset}\n")
+    utils.print_input_recap(args.xyz_1, args.xyz_2, args.basis, args.state, args.spin, args.axis, args.range, args.offset)
 
     # 3. Setup and calculations
     m1 = Monomer(mol_coord1, basis=args.basis)
     m2 = Monomer(mol_coord2, basis=args.basis)
     
     print("Start HF/CIS calculations on monomers...\n")
-    m1.run_calculations(singlet=is_singlet, xc=args.xc)
-    m2.run_calculations(singlet=is_singlet, xc=args.xc)
+    nstates=3 if args.state < 3 else args.state
+    m1.run_calculations(nstates=nstates, singlet=is_singlet, xc=args.xc)
+    m2.run_calculations(nstates=nstates, singlet=is_singlet, xc=args.xc)
+
+    m1.print_td_analysis()
+    if args.xyz_2:
+        m2.print_td_analysis()
     
-    rho1 = m1.get_trans_density(args.state)
-    rho2 = m2.get_trans_density(args.state)
-    if np.dot(m1.td.transition_dipole()[args.state], m2.td.transition_dipole()[args.state]) < 0:
+    rho1 = m1.get_trans_density(args.state -1)
+    rho2 = m2.get_trans_density(args.state -1)
+    if np.dot(m1.td.transition_dipole()[args.state -1], m2.td.transition_dipole()[args.state -1]) < 0:
         rho2 = -rho2
 
     print("\nStart scan...\n")
@@ -70,11 +72,11 @@ def main():
         jc = coup.get_J(singlet=is_singlet)
         jk = coup.get_K()
         jp = coup.get_P_term()
-        jd = utils.dipole_dipole_J(m1, m2, trans_vector, args.state, singlet=is_singlet) 
+        jd = utils.dipole_dipole_J(m1, m2, trans_vector, args.state -1, singlet=is_singlet) 
         
         j_total = jc + jk + jp
         
-        utils.print_row(dist, jc, jk, jp, jd, j_total)
+        utils.print_row_output(dist, jc, jk, jp, jd, j_total)
 
     # 5. Final report
     end_time = time.time()

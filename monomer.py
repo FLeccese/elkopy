@@ -1,3 +1,5 @@
+import os
+
 from pyscf import gto, scf, tdscf
 import numpy as np
 from copy import deepcopy
@@ -25,7 +27,7 @@ class Monomer:
 		self.mol = optimize(mf)
 		return self.mol
 
-	def run_calculations(self, nstates=5, singlet=True, xc=None):
+	def run_calculations(self, nstates, singlet=True, xc=None):
 		if xc is None:
 			self.mf = scf.RHF(self.mol).run()
 			self.td = tdscf.TDA(self.mf)
@@ -39,6 +41,32 @@ class Monomer:
 		self.td.singlet = singlet
 		self.td.run(nstates=nstates)
 		return self.td
+	
+	def print_td_analysis(self):
+		e_ev = self.td.e * 27.2114
+		f_list = self.td.oscillator_strength()
+		nocc = self.mol.nelectron // 2
+
+		print(f"\n--- Excited states analysis (Monomer: {os.path.basename(self.xyz_file)}) ---\n")
+		print(f"{'State':>5} | {'Energy (eV)':>12} | {'f':>8} | {'Dominant Transition':>22} | {'Amplitude':>8}")
+		print("-" * 69)
+
+		for i, (energy, f) in enumerate(zip(e_ev, f_list)):
+			x_coeffs = self.td.xy[i][0]
+
+			idx_max = np.unravel_index(np.argmax(np.abs(x_coeffs)), x_coeffs.shape)
+			occ_idx = idx_max[0] # i
+			virt_idx = idx_max[1] # a
+			amplitude = x_coeffs[occ_idx, virt_idx]
+	
+			mo_occ = occ_idx + 1
+			mo_virt = virt_idx + nocc + 1
+
+			trans_str = f"MO {mo_occ:>3} -> MO {mo_virt:<3}"
+            
+			print(f"{i+1:>5} | {energy:>12.4f} | {f:>8.4f} | {trans_str:>22} | {amplitude:>8.4f}")
+		
+		print("-" * 69 + "\n")
 		
 	def get_trans_density(self, idx):
 		nocc = self.mol.nelectron // 2

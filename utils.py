@@ -23,7 +23,7 @@ def dipole_dipole_J(m1, m2, coords, idx, singlet=True):
     j_dd = abs((3 * (np.dot(mu_D, R_u)*np.dot(mu_A, R_u)) - np.dot(mu_D, mu_A)) / (R_mag**3))
     return j_dd * 27.2114
 
-def print_row(d, jc, jk, jp, jd, jtot):
+def print_row_output(d, jc, jk, jp, jd, jtot):
     print(f"{d:8.2f} | {jc:10.4e} | {jk:10.4e} | {jp:10.4e} | {jd:10.4e} | {jtot:10.4e}")
 
 def create_translation_vector(offset, dist, axis):
@@ -35,3 +35,9 @@ def create_translation_vector(offset, dist, axis):
     elif axis == 'z':
         trans_vector[2] += dist
     return trans_vector
+
+def print_input_recap(xyz_1, xyz_2, basis, state, spin, axis, range, offset):
+    print(f"--- Electronic Coupling Scan ---")
+    print(f"File donor: {xyz_1} | File acceptor: {xyz_2 if xyz_2 else xyz_1}")
+    print(f"Basis set: {basis} | State: {state} ({spin})")
+    print(f"Scan Axis: {axis.upper()} | Range: {range[0]} to {range[1]} (step {range[2]}) | Base Offset: {offset}\n")
