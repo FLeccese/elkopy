@@ -13,10 +13,13 @@ def main():
     parser.add_argument("--range", type=float, nargs=3, default=[3.0, 13.0, 0.5], metavar=('START', 'STOP', 'STEP'))
     parser.add_argument("--offset", type=float, nargs=3, default=[0.0, 0.0, 0.0], metavar=('X', 'Y', 'Z'))
     parser.add_argument("-o", "--output", default="coupling_scan_results.csv", help="Output CSV filename")
+    parser.add_argument("--plot", action='store_true', help="Generate plot after scan")
+
     args = parser.parse_args()
     run_distance_scan(
         xyz_1=args.xyz_1, xyz_2=args.xyz_2, state=args.state, spin=args.spin,
-        basis=args.basis, xc=args.xc, axis=args.axis, scan_range=args.range, offset=args.offset, output_filename=args.output
+        basis=args.basis, xc=args.xc, axis=args.axis, scan_range=args.range, offset=args.offset, 
+        output_filename=args.output, plot=args.plot
     )
 
 if __name__ == "__main__":

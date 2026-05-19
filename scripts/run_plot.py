@@ -6,7 +6,7 @@ def main():
     parser.add_argument('input', help='The generated scan_results.csv file')
     parser.add_argument('--logy', action='store_true', help='Set y-scale to log')
     parser.add_argument('--logx', action='store_true', help='Set x-scale to log')
-    parser.add_argument('--output', help='PNG plot name')
+    parser.add_argument('-o','--output', help='PNG plot name')
     parser.add_argument('--columns', '-c', nargs='+', help='Columns to plot')
 
     args = parser.parse_args()

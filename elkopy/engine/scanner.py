@@ -6,10 +6,11 @@ from elkopy.compchem.monomer import Monomer
 from elkopy.physics.el_coupling import ElectronicCoupling
 from elkopy.physics.approximations import dipole_dipole_J
 from elkopy.utils import io, system
+from elkopy.analysis.plot import generate_coupling_plot
 
-def run_distance_scan(xyz_1, xyz_2=None, state=1, spin='singlet', basis='3-21g', xc=None, axis='z', scan_range=[3.0, 13.0, 0.5], offset=[0.0, 0.0, 0.0], output_filename="coupling_scan_results.csv"):
+def run_distance_scan(xyz_1, xyz_2=None, state=1, spin='singlet', basis='3-21g', xc=None, axis='z', scan_range=[3.0, 13.0, 0.5], offset=[0.0, 0.0, 0.0], output_filename="coupling_scan_results.csv", plot=False):
 
-    # Initialization
+    # 1. Initialization
     start_time = time.time()
     mem_start = system.get_memory_usage()
     
@@ -20,7 +21,7 @@ def run_distance_scan(xyz_1, xyz_2=None, state=1, spin='singlet', basis='3-21g',
 
     io.print_input_recap(xyz_1, xyz_2, basis, state, spin, axis, scan_range, offset)
 
-    # Setup and calculations
+    # 2. Setup and calculations
     m1 = Monomer(mol_coord1, basis=basis)
     m2 = Monomer(mol_coord2, basis=basis)
 
@@ -76,11 +77,20 @@ def run_distance_scan(xyz_1, xyz_2=None, state=1, spin='singlet', basis='3-21g',
         io.print_row_output(dist, vals['jc'], vals['jk'], vals['jp'], vals['jd'], j_total)
         results.append([dist, vals['jc'], vals['jk'], vals['jp'], vals['jd'], j_total])
     
-    # Save results to CSV
+    # 3. Save results to CSV
     columns = ['Distance', 'J_Coul', 'J_Exch', 'J_Pterm', 'J_DipDip', 'J_Total']
     df = pd.DataFrame(results, columns=columns)
     df.to_csv(output_filename, index=False)
     print(f"\nScan completed. Results saved to '{output_filename}'.")
+
+    # 4. Generate plot if requested
+    if plot:
+        try:
+            generate_coupling_plot(input_csv=output_filename)
+            base_name = output_filename.rsplit('.', 1)[0]
+            print(f"Plot successfully saved to '{base_name}.png'.")
+        except Exception as e:
+            print(f"Warning: Could not generate plot automatically. Error: {str(e)}")
 
     # 5. Final report
     system.print_performance_report(start_time, mem_start)
