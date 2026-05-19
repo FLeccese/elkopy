@@ -1,5 +1,4 @@
 import os
-
 from pyscf import gto, scf, tdscf
 import numpy as np
 from copy import deepcopy
@@ -42,15 +41,12 @@ class Monomer:
 		self.td.run(nstates=nstates)
 		return self.td
 	
-	def print_td_analysis(self):
+	def get_exstates_data(self):
 		e_ev = self.td.e * 27.2114
 		f_list = self.td.oscillator_strength()
 		nocc = self.mol.nelectron // 2
 
-		print(f"\n--- Excited states analysis (Monomer: {os.path.basename(self.xyz_file)}) ---\n")
-		print(f"{'State':>5} | {'Energy (eV)':>12} | {'f':>8} | {'Dominant Transition':>22} | {'Amplitude':>8}")
-		print("-" * 69)
-
+		states_data = []
 		for i, (energy, f) in enumerate(zip(e_ev, f_list)):
 			x_coeffs = self.td.xy[i][0]
 
@@ -62,17 +58,22 @@ class Monomer:
 			mo_occ = occ_idx + 1
 			mo_virt = virt_idx + nocc + 1
 
-			trans_str = f"MO {mo_occ:>3} -> MO {mo_virt:<3}"
-            
-			print(f"{i+1:>5} | {energy:>12.4f} | {f:>8.4f} | {trans_str:>22} | {amplitude:>8.4f}")
-		
-		print("-" * 69 + "\n")
-		
+			states_data.append({
+				'state': i + 1,
+				'energy': energy,
+				'f': f,
+				'mo_occ': mo_occ,
+				'mo_virt': mo_virt,
+				'amplitude': amplitude
+			})
+	
+		return states_data
+
 	def get_trans_density(self, idx):
 		nocc = self.mol.nelectron // 2
 		c_occ = self.mf.mo_coeff[:, :nocc]
 		c_virt = self.mf.mo_coeff[:, nocc:]
-		a_ia = self.td.xy[idx][0]*np.sqrt(2)
+		a_ia = self.td.xy[idx][0]*np.sqrt(2)  # the sqrt(2) factor is needed to get the correct amplitude for excited states in TDA
 		rho_mono = c_occ @ a_ia @ c_virt.T 
 		return rho_mono
 

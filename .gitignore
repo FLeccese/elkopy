@@ -1,4 +1,6 @@
-/__pycache__
+__pycache__
+*.egg-info/
+
 /ethylene_MN15L.xyz
 /main.py
 /hexatriene.xyz
