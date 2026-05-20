@@ -20,5 +20,5 @@ dependencies = [
 elkopy = "scripts.run_elkopy:main"
 elkoplot = "scripts.run_plot:main"
 
-[tool.setuptools]
-packages = ["elkopy", "scripts"]
+[tool.setuptools.packages.find]
+include = ["elkopy*", "scripts*"]
