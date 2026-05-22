@@ -15,7 +15,9 @@ class ElectronicCoupling:
 		if not singlet:
 			return 0.0
 
-		vj = get_jk((self.mol_A, self.mol_A, self.mol_D, self.mol_D), self.rho_D, scripts='ijkl,ji->kl', aosym='s4')
+		symmetry = 's4' if self.mol_D.nao == self.mol_A.nao else 's1'
+
+		vj = get_jk((self.mol_D, self.mol_D, self.mol_A, self.mol_A), self.rho_D, scripts='ijkl,ji->kl', aosym=symmetry)
 		j_coul = 2* np.sum(vj * self.rho_A) * 27.2114 #eV
 		
 		return j_coul
@@ -26,9 +28,8 @@ class ElectronicCoupling:
         
 		return j_exch
 
-	def get_P_term(self, singlet=True):
+	def _setup_supermolecule_and_core(self):
 
-		#Supermolecule approach
 		mol_super = gto.mole.conc_mol(self.mol_D, self.mol_A)
 		nD , nA = self.mol_D.nao , self.mol_A.nao
         
@@ -57,41 +58,63 @@ class ElectronicCoupling:
 		dm_core_super = np.zeros((nD + nA, nD + nA))
 		dm_core_super[:nD, :nD] = dm_core_d
 		dm_core_super[nD:, nD:] = dm_core_a
-		
+
 		#Screened hamiltonian
 		h_core_super = mol_super.intor('int1e_kin') + mol_super.intor('int1e_nuc')
-		
 		vj_core, vk_core = scf.hf.get_jk(mol_super, dm_core_super)
 		h_eff = h_core_super + (vj_core - 0.5 * vk_core)
 
-		h_aa = c_a_super @ h_eff @ c_a_super
-		h_apap = c_ap_super @ h_eff @ c_ap_super
-		h_ab = c_a_super @ h_eff @ c_b_super
-		h_apbp = c_ap_super @ h_eff @ c_bp_super
+		h_data = {
+            'h_aa': c_a_super @ h_eff @ c_a_super,
+            'h_bb': c_b_super @ h_eff @ c_b_super,
+            'h_apap': c_ap_super @ h_eff @ c_ap_super,
+            'h_ab': c_a_super @ h_eff @ c_b_super,
+            'h_apbp': c_ap_super @ h_eff @ c_bp_super,
+            's_ab': s_ab,
+            's_apbp': s_apbp,
+            'c_d_h': c_d_h, 'c_d_l': c_d_l,
+            'c_a_h': c_a_h, 'c_a_l': c_a_l
+        }
+        
+		return h_data
 	
-		# Beta (beta_ab = h_ab - (s_ab * h_aa))
-		beta_ab = h_ab - (s_ab * h_aa)
-		beta_apbp = h_apbp - (s_apbp * h_apap)
-		
-		# 2 electron integrals calculation via get_jk (in order to not save ERI in the RAM/disk)
-        # V2e = (L_D L_D | H_A H_A) 
-		rho_ap = np.outer(c_d_l, c_d_l)
-		rho_b = np.outer(c_a_h, c_a_h)
-		vj_v2e = get_jk((self.mol_A, self.mol_A, self.mol_D, self.mol_D), rho_ap, scripts='ijkl,ji->kl', aosym='s4')
-		v_2e = np.sum(vj_v2e * rho_b)
-		
-        # 7. J0 = (L_D H_D | H_D L_D) -> Simile a K_Exchange
-		rho_t = np.outer(c_d_l, c_d_h)
-		v_j0 = get_jk(self.mol_D, rho_t, scripts='ijkl,ji->kl', aosym='s8')
-		j0 = np.sum(v_j0 * rho_t)
-		j0_term = j0 if singlet else -j0
+	def _get_phase_and_j0(self, h_data, singlet=True):
+		c_d_h = h_data['c_d_h']
+		c_d_l = h_data['c_d_l']
+		c_a_h = h_data['c_a_h']
+		c_a_l = h_data['c_a_l']
 
+		#phase determination for the coupling sign (based on the overlap of the test transition density with the actual transition density)
 		rho_test_D = np.outer(c_d_h, c_d_l)
 		phase_D = np.sign(np.sum(rho_test_D * self.rho_D))
 		rho_test_A = np.outer(c_a_h, c_a_l)
 		phase_A = np.sign(np.sum(rho_test_A * self.rho_A))
 
-		p_term = - phase_D * phase_A * ((s_apbp * beta_ab) + (s_ab * beta_apbp) - (s_ab * s_apbp * (v_2e + j0_term)))
+		#J0 = (L_D H_D | H_D L_D) -> Similar to K_Exchange
+		rho_t = np.outer(c_d_l, c_d_h)
+		v_j0 = get_jk(self.mol_D, rho_t, scripts='ijkl,ji->kl', aosym='s8')
+		j0 = np.sum(v_j0 * rho_t)
+		j0_term = j0 if singlet else -j0
+
+		return phase_D * phase_A, j0_term
+
+	def get_P_term_homo(self, singlet=True):
+
+		h_data = self._setup_supermolecule_and_core()
+		global_phase, j0_term = self._get_phase_and_j0(h_data, singlet=singlet)
+	
+		# Beta (beta_ab = h_ab - (s_ab * h_aa))
+		beta_ab = h_data['h_ab'] - (h_data['s_ab'] * h_data['h_aa'])
+		beta_apbp = h_data['h_apbp'] - (h_data['s_apbp'] * h_data['h_apap'])
+		
+		# 2 electron integrals calculation via get_jk (in order to not save ERI in the RAM/disk)
+        # V2e = (L_D L_D | H_A H_A) 
+		rho_ap = np.outer(h_data['c_d_l'], h_data['c_d_l'])
+		rho_b = np.outer(h_data['c_a_h'], h_data['c_a_h'])
+		vj_v2e = get_jk((self.mol_A, self.mol_A, self.mol_D, self.mol_D), rho_ap, scripts='ijkl,lk->ij', aosym='s4')
+		v_2e = np.sum(vj_v2e * rho_b)
+
+		p_term = - global_phase * ((h_data['s_apbp'] * beta_ab) + (h_data['s_ab'] * beta_apbp) - (h_data['s_ab'] * h_data['s_apbp'] * (v_2e + j0_term)))
 
 		#print('h_aa=', h_aa*27.2114)
 		#print('h_ab=', h_ab*27.2114)
@@ -102,5 +125,33 @@ class ElectronicCoupling:
 		#print('beta_ab=', beta_ab*27.2114)
 		#print('beta_apbp=', beta_apbp*27.2114)
 		
+		return p_term *  27.2114 # eV
+
+	def get_P_term_hetero(self, singlet=True):
+
+		h_data = self._setup_supermolecule_and_core()
+		global_phase, j0_term = self._get_phase_and_j0(h_data, singlet=singlet)
+
+		rho_a = np.outer(h_data['c_d_h'], h_data['c_d_h'])     # (aa)
+		rho_ap = np.outer(h_data['c_d_l'], h_data['c_d_l'])    # (a'a')
+		rho_b = np.outer(h_data['c_a_h'], h_data['c_a_h'])     # (bb)
+		rho_bp = np.outer(h_data['c_a_l'], h_data['c_a_l'])    # (b'b')
+
+		#Intra-monomer potentials
+		v_aa = get_jk(self.mol_D, rho_a, scripts='ijkl,ji->kl', aosym='s4')
+		v_bb = get_jk(self.mol_A, rho_b, scripts='ijkl,ji->kl', aosym='s4')
         
+		#Inter-monomer potentials
+		v_ap_inter = get_jk((self.mol_A, self.mol_A, self.mol_D, self.mol_D), rho_ap, scripts='ijkl,lk->ij')
+		v_bp_inter = get_jk((self.mol_D, self.mol_D, self.mol_A, self.mol_A), rho_bp, scripts='ijkl,lk->ij')
+
+		eri_aa_apap = np.sum(v_aa * rho_ap)
+		eri_aa_bpbp = np.sum(v_bp_inter * rho_a)
+		eri_bb_apap = np.sum(v_ap_inter * rho_b)
+		eri_bb_bpbp = np.sum(v_bb * rho_bp)
+		eri_aa_aa   = np.sum(v_aa * rho_a)
+		eri_bb_bb   = np.sum(v_bb * rho_b)
+
+		p_term = - global_phase * ((h_data['s_apbp'] * h_data['h_ab']) + (h_data['s_ab'] * h_data['h_apbp']) - (0.5 * h_data['s_ab'] * h_data['s_apbp'] * (2*h_data['h_bb'] + 2*h_data['h_apap'] + eri_aa_apap - eri_aa_bpbp + 3*eri_bb_apap - eri_bb_bpbp - eri_aa_aa + eri_bb_bb + 2*j0_term)))
+
 		return p_term *  27.2114 # eV

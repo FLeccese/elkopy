@@ -1,11 +1,11 @@
 import numpy as np
 
-def dipole_dipole_J(m1, m2, coords, idx, singlet=True):
+def dipole_dipole_J(m1, m2, coords, idx=[1, 1], singlet=True):
     if not singlet:
         return 0.0
     
-    mu_D = m1.td.transition_dipole()[idx]
-    mu_A = m2.td.transition_dipole()[idx]
+    mu_D = m1.td.transition_dipole()[idx[0] - 1]
+    mu_A = m2.td.transition_dipole()[idx[1] - 1]
 
     if np.dot(mu_D, mu_A) > 0:
         mu_A = -mu_A

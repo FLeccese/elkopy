@@ -15,10 +15,21 @@ def create_translation_vector(offset, dist, axis):
     trans_vector[axis_map[axis]] += dist
     return trans_vector
 
-def print_input_recap(xyz_1, xyz_2, basis, state, spin, axis, range, offset):
+def parse_excited_states(state_arg):
+    if len(state_arg) == 1:
+        return state_arg[0], state_arg[0]
+    elif len(state_arg) == 2:
+        return state_arg[0], state_arg[1]
+    else:
+        raise ValueError
+    
+def print_input_recap(xyz_1, xyz_2, basis, state_D, state_A, spin, axis, range, offset):
+    file_A = xyz_2 if xyz_2 else xyz_1
+
     print(f"--- Electronic Coupling Scan ---")
-    print(f"File donor: {xyz_1} | File acceptor: {xyz_2 if xyz_2 else xyz_1}")
-    print(f"Basis set: {basis} | State: {state} ({spin})")
+    print(f"Basis set: {basis} | Spin Multiplicity: {spin}")
+    print(f"DONOR    -> File: {xyz_1:<25} | State: {state_D}")
+    print(f"ACCEPTOR -> File: {file_A:<25} | State: {state_A}")
     print(f"Scan Axis: {axis.upper()} | Range: {range[0]} to {range[1]} (step {range[2]}) | Base Offset: {offset}\n")
 
 def print_td_table(states_data, xyz_file):

@@ -4,7 +4,7 @@ from elkopy.physics.el_coupling import ElectronicCoupling
 from elkopy.physics.approximations import dipole_dipole_J
 from elkopy.utils import io
 
-def run_distance_scan(xyz_1, xyz_2=None, state=1, spin='singlet', basis='3-21g', xc=None, axis='z', scan_range=[3.0, 13.0, 0.5], offset=[0.0, 0.0, 0.0]):
+def run_distance_scan(xyz_1, xyz_2=None, state=[1, 1], spin='singlet', basis='3-21g', xc=None, axis='z', scan_range=[3.0, 13.0, 0.5], offset=[0.0, 0.0, 0.0]):
     
     mol_coord1 = io.read_xyz(xyz_1)
     xyz_2 = xyz_2 if xyz_2 else xyz_1
@@ -14,16 +14,19 @@ def run_distance_scan(xyz_1, xyz_2=None, state=1, spin='singlet', basis='3-21g',
     m1 = Monomer(mol_coord1, basis=basis)
     m2 = Monomer(mol_coord2, basis=basis)
 
-    nstates=3 if state < 3 else state
+    state_D, state_A = state[0], state[1] if len(state) > 1 else state[0]
+
+    max_states = max(state_D, state_A)
+    nstates = 3 if max_states < 3 else max_states
     m1.run_calculations(nstates=nstates, singlet=is_singlet, xc=xc)
     m2.run_calculations(nstates=nstates, singlet=is_singlet, xc=xc)
 
     m1_data = m1.get_exstates_data()
     m2_data = m2.get_exstates_data() if xyz_2 != xyz_1 else None
     
-    rho1 = m1.get_trans_density(state -1)
-    rho2 = m2.get_trans_density(state -1)
-    if np.dot(m1.td.transition_dipole()[state -1], m2.td.transition_dipole()[state -1]) < 0:
+    rho1 = m1.get_trans_density(state_D - 1)
+    rho2 = m2.get_trans_density(state_A - 1)
+    if np.dot(m1.td.transition_dipole()[state_D - 1], m2.td.transition_dipole()[state_A - 1]) < 0:
         rho2 = -rho2
 
     yield {
@@ -44,8 +47,8 @@ def run_distance_scan(xyz_1, xyz_2=None, state=1, spin='singlet', basis='3-21g',
         terms_functions = {
             'jc': lambda: coup.get_J(singlet=is_singlet),
             'jk': lambda: coup.get_K(),
-            'jp': lambda: coup.get_P_term(singlet=is_singlet),
-            'jd': lambda: dipole_dipole_J(m1, m2, trans_vector, state - 1, singlet=is_singlet)
+            'jp': lambda: coup.get_P_term_homo(singlet=is_singlet) if xyz_2 == xyz_1 else coup.get_P_term_hetero(singlet=is_singlet),
+            'jd': lambda: dipole_dipole_J(m1, m2, trans_vector, [state_D, state_A], singlet=is_singlet)
         }
        
         vals = {}

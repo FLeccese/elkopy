@@ -32,3 +32,5 @@ examples/2_naphthalene_heterodimer/scan_naphthalene.png
 examples/3_hexatriene_displacement/plot_hexatriene.png
 examples/3_hexatriene_displacement/scan_hexatriene.csv
 examples/3_hexatriene_displacement/scan_hexatriene.png
+C2F4.xyz
+P_test.py

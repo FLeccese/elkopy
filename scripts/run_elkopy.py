@@ -9,7 +9,7 @@ def main():
     parser = argparse.ArgumentParser(description="Electronic Coupling Scan CLI Engine.")
     parser.add_argument("xyz_1", help="File .xyz for the donor")
     parser.add_argument("xyz_2", nargs='?', help="File .xyz for the acceptor")
-    parser.add_argument("-s", "--state", type=int, default=1, help="Excited state index")
+    parser.add_argument("-s", "--state", type=int, nargs='+', default=[1], help="Excited state index: single value for both or two values:DONOR ACCEPTOR (default: 1)")
     parser.add_argument("--spin", choices=['singlet', 'triplet'], default='singlet', help="Spin multiplicity (singlet or triplet)")
     parser.add_argument("-b", "--basis", type=str, default='3-21g', help="Basis set")
     parser.add_argument("--xc", type=str, default=None, help="DFT functional")
@@ -24,7 +24,12 @@ def main():
     start_time = time.time()
     mem_start = system.get_memory_usage()
 
-    io.print_input_recap(args.xyz_1, args.xyz_2, args.basis, args.state, args.spin, args.axis, args.range, args.offset)
+    try:
+        state_D, state_A = io.parse_excited_states(args.state)
+    except ValueError as e:
+        parser.error(str(e))
+        
+    io.print_input_recap(args.xyz_1, args.xyz_2, args.basis, state_D, state_A, args.spin, args.axis, args.range, args.offset)
     print('Start calculations on monomers...\n')  
 
     scanner_generator = run_distance_scan(
