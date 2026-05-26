@@ -21,7 +21,7 @@ def parse_excited_states(state_arg):
     elif len(state_arg) == 2:
         return state_arg[0], state_arg[1]
     else:
-        raise ValueError
+        raise ValueError("Invalid --state argument. Provide either one state (for both monomers) or two states (one for each monomer).")
     
 def print_input_recap(xyz_1, xyz_2, basis, state_D, state_A, spin, axis, range, offset):
     file_A = xyz_2 if xyz_2 else xyz_1

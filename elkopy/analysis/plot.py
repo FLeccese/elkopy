@@ -4,7 +4,7 @@ import matplotlib.ticker as ticker
 import io
 import os
 
-def generate_coupling_plot(input_csv, logx=False, logy=False, output=None, columns_to_plot=None):
+def generate_coupling_plot(input_csv, logx=False, logy=False, output=None, columns_to_plot=None, unit_cm=False):
 
     if not output:
         base_name = os.path.splitext(input_csv)[0] #remove extension txt
@@ -22,6 +22,13 @@ def generate_coupling_plot(input_csv, logx=False, logy=False, output=None, colum
             to_plot = [c for c in columns_to_plot if c in available_cols]
         else:
             to_plot = available_cols
+
+        if unit_cm:
+            # 1 eV = 8065.54429 cm^-1
+            df[to_plot] = df[to_plot] * 8065.54429
+            y_label = 'Coupling / cm$^{-1}$'
+        else:
+            y_label = 'Coupling / eV'
 
         for col in to_plot:
             ax.plot(df[x_col], df[col], marker='o', label=col)
@@ -43,7 +50,7 @@ def generate_coupling_plot(input_csv, logx=False, logy=False, output=None, colum
             format_as_float(ax.yaxis)
 
         plt.xlabel(x_col)
-        plt.ylabel('Coupling/eV')
+        plt.ylabel(y_label)
         plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
         plt.grid(True, which="both", ls="-", alpha=0.5)
         plt.tight_layout()

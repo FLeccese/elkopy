@@ -23,7 +23,7 @@ __pycache__
 /Anthracene.xyz
 /anthracene_3-21g.txt
 /anthracene_3-21g.png
-examples/1_ethylene_homodimer/plot_ethylene_log.png
+examples/1_ethylene_homodimer/plot_ethylene_cm-1.png
 examples/1_ethylene_homodimer/scan_ethylene.csv
 examples/1_ethylene_homodimer/scan_ethylene.png
 examples/2_naphthalene_heterodimer/comparison_coul_coupling.png
