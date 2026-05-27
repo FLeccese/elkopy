@@ -6,8 +6,11 @@ def read_xyz(path):
         raise FileNotFoundError(f"File {path} non trovato.")
     return path
 
-def print_row_output(d, jc, jk, jp, jd, jtot):
-    print(f"{d:8.2f} | {jc:11.4e} | {jk:11.4e} | {jp:11.4e} | {jd:11.4e} | {jtot:11.4e}")
+def print_row_output(d, jc, jk, jp, jd, jtot, jes=None):
+    if jes is not None:
+        print(f"{d:8.2f} | {jc:11.4e} | {jk:11.4e} | {jp:11.4e} | {jd:11.4e} | {jes:11.4e} | {jtot:11.4e}")
+    else:
+        print(f"{d:8.2f} | {jc:11.4e} | {jk:11.4e} | {jp:11.4e} | {jd:11.4e} | {jtot:11.4e}")
 
 def create_translation_vector(offset, dist, axis):
     trans_vector = np.array(offset, dtype=float)

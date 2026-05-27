@@ -16,6 +16,7 @@ def main():
     parser.add_argument("--axis", choices=['x', 'y', 'z'], default='z', help="Scanning axis")
     parser.add_argument("--range", type=float, nargs=3, default=[3.0, 13.0, 0.5], metavar=('START', 'STOP', 'STEP'))
     parser.add_argument("--offset", type=float, nargs=3, default=[0.0, 0.0, 0.0], metavar=('X', 'Y', 'Z'))
+    parser.add_argument("--fullqm", action='store_true', help="Run full QM calculation for homodimers (adds 'Full_QM' column to output)")
     parser.add_argument("-o", "--output", default="coupling_scan_results.csv", help="Output CSV filename")
     parser.add_argument("--plot", action='store_true', help="Generate plot after scan")
 
@@ -34,27 +35,42 @@ def main():
 
     scanner_generator = run_distance_scan(
         xyz_1=args.xyz_1, xyz_2=args.xyz_2, state=args.state, spin=args.spin,
-        basis=args.basis, xc=args.xc, axis=args.axis, scan_range=args.range, offset=args.offset
+        basis=args.basis, xc=args.xc, axis=args.axis, scan_range=args.range, offset=args.offset, run_fullQM=args.fullqm
     )
 
     results = []
+    calculate_fullQM = False
+
     for message in scanner_generator:
         if message["status"] == "init_done":
             io.print_td_table(message["m1_data"], args.xyz_1)
             if message['m2_data'] is not None: 
                 io.print_td_table(message["m2_data"], args.xyz_2)
-            
+
+            calculate_fullQM = message["calculate_fullQM"]
+
             print("\nStarting scan...\n")
-            print(f"{'Dist('+args.axis+')':>8} | {'J_Coul':>11} | {'J_Exch':>11} | {'J_Pterm':>11} | {'J_DipDip':>11} | {'J_Total':>11}")
-            print("-" * 80)
+            if calculate_fullQM:
+                print(f"{'Dist('+args.axis+')':>8} | {'J_Coul':>11} | {'J_Exch':>11} | {'J_Pterm':>11} | {'J_DipDip':>11} | {'Full_QM':>11} | {'J_Total':>11}")
+                print("-" * 93)
+            else:
+                print(f"{'Dist('+args.axis+')':>8} | {'J_Coul':>11} | {'J_Exch':>11} | {'J_Pterm':>11} | {'J_DipDip':>11} | {'J_Total':>11}")
+                print("-" * 80)
         
         elif message["status"] == "scan_point":
             row_data = message["data"]
-            io.print_row_output(row_data[0], row_data[1], row_data[2], row_data[3], row_data[4], row_data[5])
+
+            if calculate_fullQM:
+                io.print_row_output(row_data[0], row_data[1], row_data[2], row_data[3], row_data[4], row_data[5], row_data[6])
+            else:
+                io.print_row_output(row_data[0], row_data[1], row_data[2], row_data[3], row_data[4], row_data[5])
             results.append(row_data)
     
     # 3. Save results to CSV
-    columns = ['Distance', 'J_Coul', 'J_Exch', 'J_Pterm', 'J_DipDip', 'J_Total']
+    if calculate_fullQM:
+        columns = ['Distance', 'J_Coul', 'J_Exch', 'J_Pterm', 'J_DipDip', 'Full_QM', 'J_Total']
+    else:
+        columns = ['Distance', 'J_Coul', 'J_Exch', 'J_Pterm', 'J_DipDip', 'J_Total']
     df = pd.DataFrame(results, columns=columns)
     df.to_csv(args.output, index=False)
     print(f"\nScan completed. Results saved to '{args.output}'.")
