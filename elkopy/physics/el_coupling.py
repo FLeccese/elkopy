@@ -70,6 +70,7 @@ class ElectronicCoupling:
             'h_apap': c_ap_super @ h_eff @ c_ap_super,
             'h_ab': c_a_super @ h_eff @ c_b_super,
             'h_apbp': c_ap_super @ h_eff @ c_bp_super,
+			'h_bpbp': c_bp_super @ h_eff @ c_bp_super,
             's_ab': s_ab,
             's_apbp': s_apbp,
             'c_d_h': c_d_h, 'c_d_l': c_d_l,
@@ -137,21 +138,24 @@ class ElectronicCoupling:
 		rho_b = np.outer(h_data['c_a_h'], h_data['c_a_h'])     # (bb)
 		rho_bp = np.outer(h_data['c_a_l'], h_data['c_a_l'])    # (b'b')
 
-		#Intra-monomer potentials
-		v_aa = get_jk(self.mol_D, rho_a, scripts='ijkl,ji->kl', aosym='s4')
-		v_bb = get_jk(self.mol_A, rho_b, scripts='ijkl,ji->kl', aosym='s4')
-        
-		#Inter-monomer potentials
 		v_ap_inter = get_jk((self.mol_A, self.mol_A, self.mol_D, self.mol_D), rho_ap, scripts='ijkl,lk->ij')
 		v_bp_inter = get_jk((self.mol_D, self.mol_D, self.mol_A, self.mol_A), rho_bp, scripts='ijkl,lk->ij')
 
-		eri_aa_apap = np.sum(v_aa * rho_ap)
 		eri_aa_bpbp = np.sum(v_bp_inter * rho_a)
 		eri_bb_apap = np.sum(v_ap_inter * rho_b)
-		eri_bb_bpbp = np.sum(v_bb * rho_bp)
-		eri_aa_aa   = np.sum(v_aa * rho_a)
-		eri_bb_bb   = np.sum(v_bb * rho_b)
 
-		p_term = - global_phase * ((h_data['s_apbp'] * h_data['h_ab']) + (h_data['s_ab'] * h_data['h_apbp']) - (0.5 * h_data['s_ab'] * h_data['s_apbp'] * (2*h_data['h_bb'] + 2*h_data['h_apap'] + eri_aa_apap - eri_aa_bpbp + 3*eri_bb_apap - eri_bb_bpbp - eri_aa_aa + eri_bb_bb + 2*j0_term)))
+		rho_t_B = np.outer(h_data['c_a_l'], h_data['c_a_h'])   # (b'b)
+		v_j0_B = get_jk(self.mol_B, rho_t_B, scripts='ijkl,ji->kl', aosym='s8')
+		j0_B = np.sum(v_j0_B * rho_t_B)
+		j0_term_B = j0_B if singlet else -j0_B
+
+		s_ab = h_data['s_ab']
+		s_apbp = h_data['s_apbp']
+
+		p_term = - global_phase * (
+			(s_apbp * h_data['h_ab']) + 
+			(s_ab * h_data['h_apbp']) - 
+			(0.5 * s_ab * s_apbp * (2*h_data['h_bb'] + h_data['h_apap'] + h_data['h_bpbp'] + eri_aa_bpbp + eri_bb_apap + j0_term + j0_term_B))
+		)
 
 		return p_term *  27.2114 # eV
