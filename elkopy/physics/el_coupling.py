@@ -144,10 +144,11 @@ class ElectronicCoupling:
 		eri_aa_bpbp = np.sum(v_bp_inter * rho_a)
 		eri_bb_apap = np.sum(v_ap_inter * rho_b)
 
-		rho_t_B = np.outer(h_data['c_a_l'], h_data['c_a_h'])   # (b'b)
-		v_j0_B = get_jk(self.mol_B, rho_t_B, scripts='ijkl,ji->kl', aosym='s8')
-		j0_B = np.sum(v_j0_B * rho_t_B)
-		j0_term_B = j0_B if singlet else -j0_B
+		# J0 terms for tha acceptor A
+		rho_t_A = np.outer(h_data['c_a_l'], h_data['c_a_h'])   # (b'b)
+		v_j0_A = get_jk(self.mol_A, rho_t_A, scripts='ijkl,ji->kl', aosym='s8')
+		j0_A = np.sum(v_j0_A * rho_t_A)
+		j0_term_A = j0_A if singlet else -j0_A
 
 		s_ab = h_data['s_ab']
 		s_apbp = h_data['s_apbp']
@@ -155,7 +156,7 @@ class ElectronicCoupling:
 		p_term = - global_phase * (
 			(s_apbp * h_data['h_ab']) + 
 			(s_ab * h_data['h_apbp']) - 
-			(0.5 * s_ab * s_apbp * (2*h_data['h_bb'] + h_data['h_apap'] + h_data['h_bpbp'] + eri_aa_bpbp + eri_bb_apap + j0_term + j0_term_B))
+			(0.5 * s_ab * s_apbp * (2*h_data['h_bb'] + h_data['h_apap'] + h_data['h_bpbp'] + eri_aa_bpbp + eri_bb_apap + j0_term + j0_term_A))
 		)
 
 		return p_term *  27.2114 # eV
