@@ -34,3 +34,6 @@ examples/3_hexatriene_displacement/scan_hexatriene.csv
 examples/3_hexatriene_displacement/scan_hexatriene.png
 C2F4.xyz
 P_test.py
+overlap_test.py
+energy_gap_test.py
+s12_scan_results.csv

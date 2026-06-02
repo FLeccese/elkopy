@@ -51,26 +51,26 @@ def main():
 
             print("\nStarting scan...\n")
             if calculate_fullQM:
-                print(f"{'Dist('+args.axis+')':>8} | {'J_Coul':>11} | {'J_Exch':>11} | {'J_Pterm':>11} | {'J_DipDip':>11} | {'Full_QM':>11} | {'J_Total':>11}")
-                print("-" * 93)
+                print(f"{'Dist('+args.axis+')':>8} | {'J_Coul':>11} | {'J_Exch':>11} | {'J_Pterm':>11} | {'J_indirect':>11} | {'J_DipDip':>11} | {'Full_QM':>11} | {'J_Total':>11}")
+                print("-" * 107)
             else:
-                print(f"{'Dist('+args.axis+')':>8} | {'J_Coul':>11} | {'J_Exch':>11} | {'J_Pterm':>11} | {'J_DipDip':>11} | {'J_Total':>11}")
-                print("-" * 80)
+                print(f"{'Dist('+args.axis+')':>8} | {'J_Coul':>11} | {'J_Exch':>11} | {'J_Pterm':>11} | {'J_indirect':>11} | {'J_DipDip':>11} | {'J_Total':>11}")
+                print("-" * 95)
         
         elif message["status"] == "scan_point":
             row_data = message["data"]
 
             if calculate_fullQM:
-                io.print_row_output(row_data[0], row_data[1], row_data[2], row_data[3], row_data[4], row_data[5], row_data[6])
+                io.print_row_output(row_data[0], row_data[1], row_data[2], row_data[3], row_data[4], row_data[5], row_data[7], row_data[6]) # jes is row_data[6], j_total is row_data[7]
             else:
-                io.print_row_output(row_data[0], row_data[1], row_data[2], row_data[3], row_data[4], row_data[5])
+                io.print_row_output(row_data[0], row_data[1], row_data[2], row_data[3], row_data[4], row_data[5], row_data[6]) # jes is not calculated
             results.append(row_data)
     
     # 3. Save results to CSV
     if calculate_fullQM:
-        columns = ['Distance', 'J_Coul', 'J_Exch', 'J_Pterm', 'J_DipDip', 'Full_QM', 'J_Total']
+        columns = ['Distance', 'J_Coul', 'J_Exch', 'J_Pterm','J_indirect', 'J_DipDip', 'Full_QM', 'J_Total']
     else:
-        columns = ['Distance', 'J_Coul', 'J_Exch', 'J_Pterm', 'J_DipDip', 'J_Total']
+        columns = ['Distance', 'J_Coul', 'J_Exch', 'J_Pterm', 'J_indirect', 'J_DipDip', 'J_Total']
     df = pd.DataFrame(results, columns=columns)
     df.to_csv(args.output, index=False)
     print(f"\nScan completed. Results saved to '{args.output}'.")

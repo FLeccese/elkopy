@@ -160,3 +160,46 @@ class ElectronicCoupling:
 		)
 
 		return p_term *  27.2114 # eV
+
+	def get_indirect_term_homo(self, singlet=True):
+		
+		h_data = self._setup_supermolecule_and_core()
+		global_phase, j0_term = self._get_phase_and_j0(h_data, singlet=singlet)
+
+		s_ab = h_data['s_ab']
+		s_apbp = h_data['s_apbp']
+
+		beta_ab = h_data['h_ab'] - s_ab * h_data['h_aa']
+		beta_apbp = h_data['h_apbp'] - s_apbp * h_data['h_apap']
+
+		rho_a = np.outer(h_data['c_d_h'], h_data['c_d_h'])     # (aa)
+		rho_ap = np.outer(h_data['c_d_l'], h_data['c_d_l'])    # (a'a')
+		rho_bp = np.outer(h_data['c_a_l'], h_data['c_a_l'])    # (b'b')
+
+		vj_intra = get_jk(self.mol_D, rho_a, scripts='ijkl,ji->kl', aosym='s8')
+		eri_aa_apap = np.sum(vj_intra * rho_ap)
+
+		vj_inter = get_jk((self.mol_A, self.mol_A, self.mol_D, self.mol_D), rho_a, scripts='ijkl,lk->ij', aosym='s4')
+		eri_aa_bpbp = np.sum(vj_inter * rho_bp)
+
+		if singlet:
+			A_gap = eri_aa_apap - eri_aa_bpbp - 2.0 * j0_term
+		else:
+			A_gap = eri_aa_apap - eri_aa_bpbp
+
+		print('A_gap:', A_gap)
+	
+		if singlet:
+			t12 = beta_apbp + 0.5 * s_apbp * A_gap
+			t13 = - (beta_ab + 0.5 * s_ab * A_gap)
+		else:
+			j0_pure = -j0_term
+			t12 = beta_apbp + 0.5 * s_apbp * A_gap + s_apbp * j0_pure
+			t13 = -beta_ab - 0.5 * s_ab * A_gap - s_ab * j0_pure
+
+		print('t12:', t12)
+		print('t13:', t13)
+
+		t_indirect = - global_phase * (2.0 * t12 * t13) / A_gap
+
+		return t_indirect * 27.2114 # eV

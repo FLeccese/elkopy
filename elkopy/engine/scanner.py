@@ -54,7 +54,8 @@ def run_distance_scan(xyz_1, xyz_2=None, state=[1, 1], spin='singlet', basis='3-
             'jc': lambda: coup.get_J(singlet=is_singlet),
             'jk': lambda: coup.get_K(),
             'jp': lambda: coup.get_P_term_homo(singlet=is_singlet) if is_homodimer else coup.get_P_term_hetero(singlet=is_singlet),
-            'jd': lambda: dipole_dipole_J(m1, m2, trans_vector, [state_D, state_A], singlet=is_singlet),
+            'jind': lambda: coup.get_indirect_term_homo(singlet=is_singlet) if is_homodimer else float('nan'),
+            'jd': lambda: dipole_dipole_J(m1, m2, trans_vector, [state_D, state_A], singlet=is_singlet)
         }
 
         if calculate_fullQM:
@@ -68,12 +69,12 @@ def run_distance_scan(xyz_1, xyz_2=None, state=[1, 1], spin='singlet', basis='3-
             except Exception:
                 vals[name] = float('nan')
         
-        if np.isnan([vals['jc'], vals['jk'], vals['jp']]).any():
+        if np.isnan([vals['jc'], vals['jk'], vals['jp'], vals['jind']]).any():
             j_total = float('nan')
         else:
-            j_total = vals['jc'] + vals['jk'] + vals['jp']
+            j_total = vals['jc'] + vals['jk'] + vals['jp'] + vals['jind']
         
-        scan_data = [dist, vals['jc'], vals['jk'], vals['jp'], vals['jd']]
+        scan_data = [dist, vals['jc'], vals['jk'], vals['jp'], vals['jind'], vals['jd']]
 
         if calculate_fullQM:
             scan_data.append(vals['jes'])
