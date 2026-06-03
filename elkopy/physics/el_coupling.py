@@ -117,12 +117,12 @@ class ElectronicCoupling:
 
 		p_term = - global_phase * ((h_data['s_apbp'] * beta_ab) + (h_data['s_ab'] * beta_apbp) - (h_data['s_ab'] * h_data['s_apbp'] * (v_2e + j0_term)))
 
-		#print('h_aa=', h_aa*27.2114)
-		#print('h_ab=', h_ab*27.2114)
-		#print('h_apap=', h_apap*27.2114)
-		#print('h_apbp=', h_apbp*27.2114)
-		#print('s_ab=', s_ab)
-		#print('s_apbp=', s_apbp)
+		#print('h_aa=', h_data['h_aa']*27.2114)
+		#print('h_ab=', h_data['h_ab']*27.2114)
+		#print('h_apap=', h_data['h_apap']*27.2114)
+		#print('h_apbp=', h_data['h_apbp']*27.2114)
+		#print('s_ab=', h_data['s_ab'])
+		#print('s_apbp=', h_data['s_apbp'])
 		#print('beta_ab=', beta_ab*27.2114)
 		#print('beta_apbp=', beta_apbp*27.2114)
 		
@@ -187,7 +187,7 @@ class ElectronicCoupling:
 		else:
 			A_gap = eri_aa_apap - eri_aa_bpbp
 
-		print('A_gap:', A_gap)
+		#print('A_gap:', A_gap)
 	
 		if singlet:
 			t12 = beta_apbp + 0.5 * s_apbp * A_gap
@@ -197,8 +197,8 @@ class ElectronicCoupling:
 			t12 = beta_apbp + 0.5 * s_apbp * A_gap + s_apbp * j0_pure
 			t13 = -beta_ab - 0.5 * s_ab * A_gap - s_ab * j0_pure
 
-		print('t12:', t12)
-		print('t13:', t13)
+		#print('t12:', t12)
+		#print('t13:', t13)
 
 		t_indirect = - global_phase * (2.0 * t12 * t13) / A_gap
 
