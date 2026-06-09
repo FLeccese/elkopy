@@ -17,7 +17,7 @@ The Coulomb coupling is computed via the Transition Density Fragment Interaction
 $$V_{\text{Coul}} = \sum_{\nu\mu \in D} \sum_{\lambda\sigma \in A} P^D_{\nu\mu} P^A_{\lambda\sigma} (\mu\nu|\sigma\lambda)$$
 
 where $P^X_{\nu\mu}$ is the CIS transition density in the atomic orbital representation. 
-This is the dominant term for singlet EET at intermediate and long range. At large distances the dipole-dipole interaction is the dominant contribution to the Coulomb term, so it decays as $R^-3$.
+This is the dominant term for singlet EET at intermediate and long range. At large distances the dipole-dipole interaction is the dominant contribution to the Coulomb term, so it decays as $R^{-3}$.
 For triplet-triplet EET this term is zero by spin selection rules.
 
 ### Exchange term ($V_{\text{Exch}}$)
