@@ -8,7 +8,7 @@ A Python package for computing electronic coupling matrix elements in Electronic
 
 The electronic coupling for EET between a donor (D) and an acceptor (A) chromophore is decomposed following the TDFI-TI framework of Fujimoto (2012) and the through-configuration theory of Scholes et al. (1994, 1995):
 
-$$T_{IF} = V_{\text{Coul}} + V_{\text{Exch}} + V_{\text{Pterm}} + V_{\text{indirect}}$$
+$$V_{IF} = V_{\text{Coul}} + V_{\text{Exch}} + V_{\text{Ovlp}} + V_{\text{indirect}}$$
 
 ### Coulomb term ($V_{\text{Coul}}$)
 
@@ -16,7 +16,9 @@ The Coulomb coupling is computed via the Transition Density Fragment Interaction
 
 $$V_{\text{Coul}} = \sum_{\nu\mu \in D} \sum_{\lambda\sigma \in A} P^D_{\nu\mu} P^A_{\lambda\sigma} (\mu\nu|\sigma\lambda)$$
 
-where $P^X_{\nu\mu}$ is the CIS transition density matrix of monomer X in the AO representation. This is the dominant term for singlet-singlet EET at intermediate and long range, corresponding to the Coulombic interaction $J = (a'a|bb')$ of Scholes et al. For triplet-triplet EET this term is zero by spin selection rules.
+where $P^X_{\nu\mu}$ is the CIS transition density in the atomic orbital representation. 
+This is the dominant term for singlet EET at intermediate and long range. At large distances the dipole-dipole interaction is the dominant contribution to the Coulomb term, so it decays as $R^-3$.
+For triplet-triplet EET this term is zero by spin selection rules.
 
 ### Exchange term ($V_{\text{Exch}}$)
 
@@ -24,15 +26,17 @@ The exchange coupling (Fujimoto 2012, Eq. 12) is:
 
 $$V_{\text{Exch}} = -\frac{1}{2} \sum_{\nu\mu \in D} \sum_{\lambda\sigma \in A} P^D_{\nu\mu} P^A_{\lambda\sigma} (\mu\lambda|\sigma\nu)$$
 
-This corresponds to the Dexter exchange integral $Z = (a'b'|ba)$ of Scholes et al. As shown by both Scholes et al. and Fujimoto, this term is small compared to the through-configuration interaction at short range.
+This term represents the simultaneous exchange of two electrons with different energy. According to Dexter, it can be seen as a Coulomb interaction between two orbital overlaps, and it decays exponentially.
+As shown by both Scholes et al. and Fujimoto, this term is small compared to the through-configuration interaction at short range (indirect term).
 
-### Penetration term ($V_{\text{Pterm}}$)
+### Overlap/Penetration term ($V_{\text{Pterm}}$)
 
 The penetration (or orbital overlap-dependent direct) term arises from the correction to $T_{14}$ at second order in interchromophore orbital overlap. Following Scholes et al. (1995, Eq. 15b) and applying the Mulliken approximation:
 
 $$V_{\text{Pterm}} = -(S_{a'b'}\beta_{ab} + S_{ab}\beta_{a'b'} - S_{ab}S_{a'b'}(\ldots))$$
 
-where the bond integrals are $\beta_{ab} = h_{ab} - S_{ab}h_{aa}$ and $\beta_{a'b'} = h_{a'b'} - S_{a'b'}h_{a'a'}$, with $h_{pq}$ being the partially screened core Hamiltonian matrix elements. For heterodimers, the formula is extended to include contributions from both HOMO-LUMO pairs (Scholes et al. 1995, Eq. 16).
+where the bond integrals are $\beta_{ab} = h_{ab} - S_{ab}h_{aa}$ and $\beta_{a'b'} = h_{a'b'} - S_{a'b'}h_{a'a'}$, with $h_{pq}$ being the partially screened core Hamiltonian matrix elements. 
+For heterodimers, the formula is extended considering the asymmetry of the system.
 
 ### Indirect (through-configuration) term ($V_{\text{indirect}}$)
 
@@ -65,7 +69,10 @@ where $\mu_D$ and $\mu_A$ are the transition dipole moments and $R$ is the inter
 ```bash
 git clone https://github.com/FLeccese/elkopy.git
 cd elkopy
-pip install -e .
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+pip install .
+deactivate
 ```
 
 ### Requirements
@@ -106,7 +113,7 @@ If only one `.xyz` file is provided, a homodimer is assumed.
 
 #### Examples
 
-Homodimer scan of ethylene along z-axis with 6-31G* basis:
+Homodimer scan of ethylene along z-axis with 6-31G* basis with default plot generated after the scan:
 
 ```bash
 elkopy ethylene.xyz -b 6-31g* --range 3.0 8.0 0.5 --plot
@@ -118,10 +125,10 @@ Heterodimer, second excited state of donor and first of acceptor:
 elkopy donor.xyz acceptor.xyz -s 2 1 -b 6-31g* --axis z
 ```
 
-Triplet-triplet EET:
+Triplet EET, scan along x, dimer separated by 4Å:
 
 ```bash
-elkopy donor.xyz --spin triplet --range 3.0 10.0 0.5
+elkopy donor.xyz --spin triplet --range 3.0 10.0 0.5 --offset 0 0 4
 ```
 
 With DFT:
@@ -189,7 +196,7 @@ scripts/
 
 ## Physical Notes
 
-The transition density matrices are computed at the TDA (Tamm-Dancoff Approximation) level. PySCF normalizes the TDA amplitudes such that $\sum_{ia} X_{ia}^2 = 1/2$, so the transition density is constructed with an explicit $\sqrt{2}$ prefactor to recover the standard CIS normalization $\sum_{ia} t_{ia}^2 = 1$ (Fujimoto 2012, Eq. 9).
+The transition density matrices are computed at the TDA (Tamm-Dancoff Approximation) level. PySCF normalizes the TDA amplitudes such that $\sum_{ia} X_{ia}^2 = 1/2$, so the transition density is constructed with an explicit $\sqrt{2}$ prefactor to recover the standard CIS normalization $\sum_{ia} t_{ia}^2 = 1$.
 
 The energy gap $A$ for the indirect term is estimated from intra- and inter-monomer two-electron integrals following the Koopmans-based approximation of Scholes et al. (1995, Eq. 8) and Fujimoto (2012, Eqs. 46-47), without requiring an explicit calculation of the ionic state energies.
 
@@ -199,11 +206,12 @@ Phase consistency between the transition densities of donor and acceptor is enfo
 
 ## References
 
-1. K. J. Fujimoto, *J. Chem. Phys.* **137**, 034101 (2012). TDFI-TI method for EET via charge-transfer states.
-2. R. D. Harcourt, G. D. Scholes, K. P. Ghiggino, *J. Chem. Phys.* **101**, 10521 (1994). Through-configuration exciton resonance interactions.
-3. G. D. Scholes, R. D. Harcourt, K. P. Ghiggino, *J. Chem. Phys.* **102**, 9574 (1995). Ab initio study of electronic factors in EET.
-4. T. Förster, *Ann. Phys.* **437**, 55 (1948). Dipole-dipole energy transfer theory.
-5. D. L. Dexter, *J. Chem. Phys.* **21**, 836 (1953). Exchange interaction mechanism.
+1. Z. You, C. Hsu, *Int. J. Quantum Chem.* **114**, 102-115 (2014)
+2. K. J. Fujimoto, *J. Chem. Phys.* **137**, 034101 (2012).
+3. R. D. Harcourt, G. D. Scholes, K. P. Ghiggino, *J. Chem. Phys.* **101**, 10521 (1994).
+4. G. D. Scholes, R. D. Harcourt, K. P. Ghiggino, *J. Chem. Phys.* **102**, 9574 (1995).
+5. T. Förster, *Ann. Phys.* **437**, 55 (1948).
+6. D. L. Dexter, *J. Chem. Phys.* **21**, 836 (1953).
 
 ---
 
