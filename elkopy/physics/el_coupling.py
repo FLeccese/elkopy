@@ -18,13 +18,13 @@ class ElectronicCoupling:
 		symmetry = 's4' if self.mol_D.nao == self.mol_A.nao else 's1'
 
 		vj = get_jk((self.mol_D, self.mol_D, self.mol_A, self.mol_A), self.rho_D, scripts='ijkl,ji->kl', aosym=symmetry)
-		j_coul = 2* np.sum(vj * self.rho_A) * 27.2114 #eV
+		j_coul = np.sum(vj * self.rho_A) * 27.2114 #eV
 		
 		return j_coul
 		
 	def get_K(self):
 		vk = get_jk((self.mol_A, self.mol_D, self.mol_D, self.mol_A), self.rho_D, scripts='ijkl,jk->il', aosym='s1')
-		j_exch = -np.sum(vk * self.rho_A) * 27.2114 #eV
+		j_exch = -1/2*np.sum(vk * self.rho_A) * 27.2114 #eV
         
 		return j_exch
 

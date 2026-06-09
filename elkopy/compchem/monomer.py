@@ -74,7 +74,7 @@ class Monomer:
 		c_occ = self.mf.mo_coeff[:, :nocc]
 		c_virt = self.mf.mo_coeff[:, nocc:]
 		a_ia = self.td.xy[idx][0]*np.sqrt(2)  # the sqrt(2) factor is needed to get the correct amplitude for excited states in TDA
-		rho_mono = c_occ @ a_ia @ c_virt.T 
+		rho_mono = np.sqrt(2)*c_occ @ a_ia @ c_virt.T 
 		return rho_mono
 
 	def copy(self):
