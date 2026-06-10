@@ -93,7 +93,7 @@ deactivate
 ```bash
 elkopy donor.xyz [acceptor.xyz] [options]
 ```
-
+The `.xyz` files must contain the alredy optimized geometry of the monomer. The chromophore must be on the plane xy (z-coordinates must be equal to 0).
 If only one `.xyz` file is provided, a homodimer is assumed.
 
 #### Main options
