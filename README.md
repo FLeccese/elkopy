@@ -69,11 +69,9 @@ where $\mu_D$ and $\mu_A$ are the transition dipole moments and $R$ is the inter
 ```bash
 git clone https://github.com/FLeccese/elkopy.git
 cd elkopy
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
 pip install .
-deactivate
 ```
+It is highly recommended to install and use the program in a virtual environment.
 
 ### Requirements
 
@@ -119,10 +117,10 @@ Homodimer scan of ethylene along z-axis with 6-31G* basis with default plot gene
 elkopy ethylene.xyz -b 6-31g* --range 3.0 8.0 0.5 --plot
 ```
 
-Heterodimer, second excited state of donor and first of acceptor:
+Heterodimer, second excited state of donor and first of acceptor with b3lyp/sto-3g:
 
 ```bash
-elkopy donor.xyz acceptor.xyz -s 2 1 -b 6-31g* --axis z
+elkopy donor.xyz acceptor.xyz -s 2 1 –xc b3lyp -b sto-6g
 ```
 
 Triplet EET, scan along x, dimer separated by 4Å:
@@ -194,13 +192,13 @@ scripts/
 
 ---
 
-## Physical Notes
+## Warnings
 
-The transition density matrices are computed at the TDA (Tamm-Dancoff Approximation) level. PySCF normalizes the TDA amplitudes such that $\sum_{ia} X_{ia}^2 = 1/2$, so the transition density is constructed with an explicit $\sqrt{2}$ prefactor to recover the standard CIS normalization $\sum_{ia} t_{ia}^2 = 1$.
+The P-term considers only HOMOs and LUMOs of the two monomers, so the values are accurate only when the excited state is composed quite entirely by the HOMO->LUMO transition. 
+To check that, the program prints an excited states analysis, where it is possible to see the energy, the oscillator strenght, the dominant transition and its relative amplitude. Be careful to take the excited states with the HOMO->LUMO transition as the dominant one and that its amplitude is as near as possible to 0.7071 .
 
-The energy gap $A$ for the indirect term is estimated from intra- and inter-monomer two-electron integrals following the Koopmans-based approximation of Scholes et al. (1995, Eq. 8) and Fujimoto (2012, Eqs. 46-47), without requiring an explicit calculation of the ionic state energies.
-
-Phase consistency between the transition densities of donor and acceptor is enforced by aligning the transition dipole moments before the scan.
+The implemented formula for the indirect term is valid only for homodimers, so be careful with heterodimers.
+Moreover, the energy gap $A$ decreases drastically at very short distances and, as the main consequence, the indirect coupling explodes.
 
 ---
 
