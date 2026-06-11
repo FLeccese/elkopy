@@ -46,13 +46,16 @@ $$V_{\text{indirect}} = -\frac{2T_{12}T_{13}}{A}$$
 
 where $A$ is the energy gap between the locally excited and ionic configurations:
 
-$$A = (aa|a'a') - (aa|b'b') \mp 2J_0$$
+$$A = (aa|a'a') - (aa|b'b') - J_0 \mp J_0$$
 
-with the upper/lower sign for singlet/triplet states respectively and $J_0 = (a'a|aa')$ the intra-monomer exchange integral. This term is consistently larger than the Dexter exchange interaction, as confirmed numerically by both Scholes et al. and Fujimoto for the ethylene dimer.
+with the upper/lower sign for singlet/triplet states respectively and $J_0 = (a'a|aa')$ the intra-monomer exchange integral. 
+This term is consistently larger than the Dexter exchange interaction, as confirmed numerically by both Scholes et al. and Fujimoto for the ethylene dimer.
 
 For heterodimers the formula is:
 
 $$V_{\text{indirect}} = -\frac{T_{12}T_{24}}{A_{12}}-\frac{T_{13}T_{34}}{A_{13}}$$
+
+but it's not implemented yet.
 
 ### Dipole-dipole approximation ($V_{\text{DipDip}}$)
 
